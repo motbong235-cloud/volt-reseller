@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Login — VOLT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <script src="/js/i18n-theme.js" defer></script>
+  <style>
+    .auth-wrap { max-width: 400px; margin: 2rem auto; padding: 0 1rem 3rem; }
+    .auth-card {
+      background: #fff; border: 1px solid var(--line); border-radius: 14px;
+      padding: 1.5rem 1.35rem; box-shadow: 0 8px 28px rgba(15,23,42,.06);
+    }
+    .auth-card h1 { font-size: 1.25rem; font-weight: 750; letter-spacing: -0.02em; }
+    .auth-card .sub { font-size: 0.85rem; color: var(--muted); margin: 0.35rem 0 1.15rem; }
+    .tabs { display: flex; gap: 0.35rem; margin-bottom: 1rem; }
+    .tabs button {
+      flex: 1; border: 1px solid var(--line); background: #f8fafc; border-radius: 8px;
+      padding: 0.5rem; font: inherit; font-weight: 600; font-size: 0.875rem; cursor: pointer;
+    }
+    .tabs button.on { background: var(--ink); color: #fff; border-color: var(--ink); }
+    .field { margin-bottom: 0.75rem; }
+    .field label { display: block; font-size: 0.75rem; font-weight: 600; color: var(--muted); margin-bottom: 0.25rem; }
+    .field input {
+      width: 100%; border: 1px solid var(--line); border-radius: 8px;
+      padding: 0.6rem 0.75rem; font: inherit; background: #fff;
+    }
+    .field input:focus { outline: 2px solid #bfdbfe; border-color: var(--blue); }
+    .hint { font-size: 0.75rem; color: var(--muted); margin-top: 0.35rem; }
+    .pw-meter { height: 4px; border-radius: 2px; background: #e2e8f0; margin-top: 0.4rem; overflow: hidden; }
+    .pw-meter span { display: block; height: 100%; width: 0; transition: width .2s, background .2s; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="logo" href="/"><img class="brand-logo" src="/logo.jpg" alt="VOLT" width="32" height="32" /> VOLT</a>
+      <nav class="nav">
+        <a href="/shop">Shop</a>
+        <a href="/docs">API</a>
+        <a class="active" href="/login">Login</a>
+              <div class="ui-controls">
+          <button type="button" data-lang-toggle>EN</button>
+          <button type="button" data-theme-toggle>☾</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="auth-wrap">
+    <div class="auth-card">
+      <h1 id="title" data-i18n="login_title">ចូលគណនី</h1>
+      <p class="sub" id="sub" data-i18n="login_sub">Email + password · សុវត្ថិភាព</p>
+
+      <div class="tabs">
+        <button type="button" class="on" data-mode="login" data-i18n="tab_login_btn">ចូល</button>
+        <button type="button" data-mode="register" data-i18n="tab_reg_btn">ចុះឈ្មោះ</button>
+      </div>
+
+      <div id="msg"></div>
+
+      <form id="form" autocomplete="on">
+        <div class="field" id="nameField" style="display:none">
+          <label for="name" data-i18n="name">ឈ្មោះ</label>
+          <input id="name" name="name" type="text" minlength="2" maxlength="80" placeholder="Your name" />
+        </div>
+        <div class="field">
+          <label for="email" data-i18n="email">Email</label>
+          <input id="email" name="email" type="email" required autocomplete="username" placeholder="you@email.com" />
+        </div>
+        <div class="field">
+          <label for="password" data-i18n="password">ពាក្យសម្ងាត់</label>
+          <input id="password" name="password" type="password" required minlength="8" autocomplete="current-password" placeholder="Min 8 chars · letter + number" />
+          <div class="pw-meter" id="meter" style="display:none"><span></span></div>
+          <p class="hint" id="pwHint">At least 8 characters, include a letter and a number.</p>
+        </div>
+        <button class="btn btn-primary btn-block" type="submit" id="submit" data-i18n="btn_signin">ចូល</button>
+      </form>
+    </div>
+    <p style="text-align:center;margin-top:1rem;font-size:0.8rem;color:var(--muted)">
+      <a href="/shop">← Back to shop</a>
+    </p>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let mode = 'login';
+
+    function setMode(m) {
+      mode = m;
+      document.querySelectorAll('.tabs button').forEach((b) => b.classList.toggle('on', b.dataset.mode === m));
+      $('#nameField').style.display = m === 'register' ? 'block' : 'none';
+      $('#meter').style.display = m === 'register' ? 'block' : 'none';
+      $('#title').textContent = m === 'register' ? 'Create account' : 'Sign in';
+      $('#sub').textContent = m === 'register' ? 'Name, email, strong password' : 'Email + password · secure session';
+      $('#submit').textContent = m === 'register' ? 'Register' : 'Sign in';
+      $('#password').autocomplete = m === 'register' ? 'new-password' : 'current-password';
+      $('#msg').innerHTML = '';
+    }
+
+    document.querySelectorAll('.tabs button').forEach((b) => {
+      b.addEventListener('click', () => setMode(b.dataset.mode));
+    });
+    if (location.pathname.includes('register')) setMode('register');
+
+    $('#password').addEventListener('input', () => {
+      const p = $('#password').value;
+      let score = 0;
+      if (p.length >= 8) score++;
+      if (/[A-Za-z]/.test(p)) score++;
+      if (/[0-9]/.test(p)) score++;
+      if (/[^A-Za-z0-9]/.test(p)) score++;
+      if (p.length >= 12) score++;
+      const pct = Math.min(100, score * 20);
+      const colors = ['#ef4444', '#f97316', '#eab308', '#22c55e', '#16a34a'];
+      const bar = $('#meter span');
+      bar.style.width = pct + '%';
+      bar.style.background = colors[Math.min(score, 4)];
+    });
+
+    function show(msg, ok) {
+      $('#msg').innerHTML = msg
+        ? `<div class="alert ${ok ? 'ok' : 'err'}">${msg}</div>`
+        : '';
+    }
+
+    $('#form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const body = {
+        email: $('#email').value.trim(),
+        password: $('#password').value,
+      };
+      if (mode === 'register') body.name = $('#name').value.trim();
+
+      const path = mode === 'register' ? '/api/auth/register' : '/api/auth/login';
+      $('#submit').disabled = true;
+      try {
+        const r = await fetch(path, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(body),
+        }).then((x) => x.json());
+        if (!r.ok) {
+          show(r.message || r.error || 'Failed', false);
+          return;
+        }
+        localStorage.setItem('volt_token', r.token);
+        localStorage.setItem('volt_user', JSON.stringify(r.user));
+        const key = r.apiKey || (r.user && r.user.apiKey) || '';
+        if (key) localStorage.setItem('volt_api_key', key);
+        let msg = 'ជោគជ័យ!';
+        if (key) {
+          msg += '<br><br><strong>API Key របស់អ្នក:</strong><br><code style="word-break:break-all;font-size:0.75rem;user-select:all">' + key + '</code><br><small>បានរក្សាទុក auto សម្រាប់ shop</small>';
+        } else {
+          msg += '<br>កំពុងទាញ API key…';
+        }
+        show(msg, true);
+        // ensure key via /me if missing
+        (async () => {
+          if (!key) {
+            try {
+              const me = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + r.token } }).then(x => x.json());
+              const k2 = me.apiKey || (me.user && me.user.apiKey);
+              if (k2) {
+                localStorage.setItem('volt_api_key', k2);
+                show('ជោគជ័យ!<br><br><strong>API Key:</strong><br><code style="word-break:break-all;font-size:0.75rem">' + k2 + '</code>', true);
+              }
+            } catch (_) {}
+          }
+          setTimeout(() => {
+            const next = new URLSearchParams(location.search).get('next') || '/shop';
+            location.href = next;
+          }, 2500);
+        })();
+      } catch (err) {
+        show(String(err.message || err), false);
+      } finally {
+        $('#submit').disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

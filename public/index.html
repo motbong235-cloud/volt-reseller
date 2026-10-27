@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>VOLT — Wholesale game top-up API</title>
+  <meta name="description" content="Reseller API for Mobile Legends, Free Fire, PUBG. Wallet, REST orders, Khmer/English." />
+  <meta name="theme-color" content="#F47A1F" />
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <script src="/js/i18n-theme.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="logo" href="/">
+        <img class="brand-logo" src="/logo.jpg" alt="VOLT" width="32" height="32" />
+        VOLT
+      </a>
+      <nav class="nav">
+        <a href="/shop" data-i18n="nav_shop">ហាង</a>
+        <a href="/docs" data-i18n="nav_api">API</a>
+        <a href="/dashboard" data-i18n="nav_reseller">Reseller</a>
+        <a href="/login" data-i18n="nav_login">ចូល</a>
+        <div class="ui-controls">
+          <button type="button" data-lang-toggle title="Language">EN</button>
+          <button type="button" data-theme-toggle title="Theme">☾</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <section class="hero">
+    <div class="container hero-grid">
+      <div>
+        <div class="pill"><span class="dot"></span> Wholesale · Reseller API</div>
+        <h1 data-i18n="hero_title">ផ្គត់ផ្គង់ top-up ហ្គេមសម្រាប់ <em>business</em></h1>
+        <p class="lead" data-i18n="hero_lead">Wallet មួយ · API មួយ។ បញ្ជាទិញ diamond / UC ពី website ឬ Telegram bot របស់អ្នក — តម្លៃ wholesale, delivery លឿន។</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary btn-lg" href="/login" data-i18n="hero_start">ចាប់ផ្តើម →</a>
+          <a class="btn btn-ghost btn-lg" href="/docs" data-i18n="hero_docs">&lt;/&gt; មើល API</a>
+        </div>
+        <div class="stats hero-meta">
+          <div><strong>JSON</strong><span data-i18n="meta_rest">REST · Bearer key</span></div>
+          <div><strong>Idempotent</strong><span data-i18n="meta_idem">មិនគិតលុយពីរ</span></div>
+          <div><strong>Refund</strong><span data-i18n="meta_refund">បរាជ័យ → សងវិញ</span></div>
+          <div><strong>24/7</strong><span>API uptime</span></div>
+        </div>
+      </div>
+      <div class="hero-art">
+        <div class="visual-card">
+          <h3>VOLT · Game Top-Up</h3>
+          <p>One wallet · REST API · KHQR deposit</p>
+          <div class="tags">
+            <span>FAST</span><span>RELIABLE</span><span>API</span>
+            <span>BOT</span><span>SHOP</span><span>WALLET</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="marquee" aria-hidden="true">
+    <div class="marquee-track" id="marquee"></div>
+  </div>
+
+  <section class="section" id="features">
+    <div class="container">
+      <div class="sec-label">What you get</div>
+      <h2 data-i18n="section_features">អ្វីដែល reseller ត្រូវការ</h2>
+      <p class="sec-lead" data-i18n="section_features_lead">Supplier មួយ · API មួយ · balance មួយ — បើកហាងដោយមិនត្រូវភ្ជាប់ប្រព័ន្ធច្រើន។</p>
+      <div class="feat-grid cols-4">
+        <div class="feat"><div class="ico">🎮</div><h3 data-i18n="feat1_t">Catalog API</h3><p data-i18n="feat1_d">បញ្ជីហ្គេម និងកញ្ចប់តម្លៃ wholesale។</p></div>
+        <div class="feat"><div class="ico">⚡</div><h3 data-i18n="feat2_t">Order + status</h3><p data-i18n="feat2_d">បញ្ជាទិញ រួចតាមដានរហូតជោគជ័យ ឬសងលុយ។</p></div>
+        <div class="feat"><div class="ico">🔒</div><h3 data-i18n="feat3_t">Prepaid wallet</h3><p data-i18n="feat3_d">ពិនិត្យ balance ផ្នែក server។ មិន bypass ការបង់។</p></div>
+        <div class="feat"><div class="ico">📡</div><h3>Webhook ready</h3><p>callback_url សម្រាប់ bot / website របស់អ្នក។</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--muted" id="access">
+    <div class="container two-col">
+      <div>
+        <div class="sec-label">3 ways to order</div>
+        <h2>Shop · Dashboard · REST API</h2>
+        <p class="sec-lead">គណនីតែមួយ · balance តែមួយ — ប្រើតាមរបៀបណាក៏បាន។</p>
+        <div class="ways">
+          <div class="way"><div class="way-badge">UI</div><div><h4>Shop</h4><p>ជ្រើសហ្គេម បញ្ជាទិញក្នុង website</p></div></div>
+          <div class="way"><div class="way-badge">$</div><div><h4>Reseller dashboard</h4><p>Balance · deposit · API key</p></div></div>
+          <div class="way"><div class="way-badge">&lt;/&gt;</div><div><h4>REST API</h4><p>ភ្ជាប់ bot ឬ storefront របស់អ្នក</p></div></div>
+        </div>
+      </div>
+      <div class="visual-card" style="margin:0 auto;width:100%;max-width:22rem">
+        <h3>Shared wallet</h3>
+        <p>Shop · Dashboard · API → one balance</p>
+        <div class="tags"><span>Shop</span><span>Dashboard</span><span>REST</span><span>Key</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="payments">
+    <div class="container">
+      <div class="sec-label">Payments</div>
+      <h2>ដាក់លុយ wallet</h2>
+      <p class="sec-lead">Deposit តាម dashboard — KHQR / demo confirm សម្រាប់សាកល្បង។</p>
+      <div class="pay-grid">
+        <div class="pay"><div class="pay-ico" style="background:#0d6efd;color:#fff">QR</div><strong>KHQR</strong><span>All banks KH</span></div>
+        <div class="pay"><div class="pay-ico" style="background:#26a17b;color:#fff">₮</div><strong>USDT</strong><span>Optional</span></div>
+        <div class="pay"><div class="pay-ico" style="background:#f3ba2f">BNB</div><strong>Binance</strong><span>Optional</span></div>
+        <div class="pay"><div class="pay-ico" style="background:var(--ink);color:#fff">$</div><strong>Wallet</strong><span>Prepaid float</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--muted" id="api">
+    <div class="container">
+      <div class="sec-label">Integration</div>
+      <h2>REST API — ភាសាកូដដូច Bay2Game</h2>
+      <p class="sec-lead">JSON · cURL · PHP · Python · Node.js — ចូល <a href="/docs">/docs</a> សម្រាប់ពេញ។</p>
+      <div class="api-box">
+        <div class="api-tabs" id="homeApiTabs">
+          <button type="button" class="on" data-lang="json">JSON</button>
+          <button type="button" data-lang="curl">cURL</button>
+          <button type="button" data-lang="php">PHP</button>
+          <button type="button" data-lang="python">Python</button>
+          <button type="button" data-lang="node">Node.js</button>
+        </div>
+        <pre class="api-code" id="homeApiCode"></pre>
+        <p style="margin-top:1rem;font-size:0.85rem;opacity:.8">
+          <a class="btn btn-primary btn-sm" href="/docs" style="text-decoration:none">API docs ពេញ →</a>
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="section">
+    <div class="container">
+      <div class="cta">
+        <div class="sec-label" style="color:#fdba74">Get started</div>
+        <h2 data-i18n="cta_title">រួចរាល់សម្រាប់ reseller?</h2>
+        <p data-i18n="cta_lead">Register → ទទួល API key auto → ដាក់លុយ → បញ្ជាទិញ។</p>
+        <a class="btn btn-primary btn-lg" href="/login" data-i18n="cta_btn">Register / Login</a>
+      </div>
+    </div>
+  </section>
+
+  <footer class="site footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="logo" style="margin-bottom:0.5rem">
+            <img class="brand-logo" src="/logo.jpg" alt="" width="28" height="28" /> VOLT
+          </div>
+          <p style="color:var(--muted);font-size:0.85rem;max-width:16rem">Wholesale game top-up API for resellers in Cambodia &amp; beyond.</p>
+        </div>
+        <div>
+          <h4>Product</h4>
+          <a href="/shop">Shop</a>
+          <a href="/docs">API</a>
+          <a href="/dashboard">Reseller</a>
+        </div>
+        <div>
+          <h4>Account</h4>
+          <a href="/login">Login</a>
+          <a href="/login">Register</a>
+        </div>
+        <div>
+          <h4>Docs</h4>
+          <a href="/docs#order">Create order</a>
+          <a href="/docs#auth">Auth</a>
+          <a href="/docs#examples">Code samples</a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span data-i18n="footer">VOLT · Wholesale top-up</span>
+        <span>API v1</span>
+      </div>
+    </div>
+  </footer>
+
+<script>
+(function () {
+  var games = ['MLBB','Free Fire','PUBG','Genshin','HOK','Roblox','Valorant','COD','AOV','Telegram','EA FC','Wild Rift'];
+  var track = document.getElementById('marquee');
+  if (track) {
+    var html = games.concat(games).map(function (n) {
+      return '<div class="m-item"><div class="ic">' + n.charAt(0) + '</div><span>' + n + '</span></div>';
+    }).join('');
+    track.innerHTML = html;
+  }
+
+  var BASE = location.origin + '/api/v1';
+  var snippets = {
+    json: 'POST ' + BASE + '/orders\nAuthorization: Bearer YOUR_KEY\nContent-Type: application/json\n\n{\n  "package_id": "mlbb-86",\n  "player_id": "123456789",\n  "server_id": "1234",\n  "reference": "shop-1001"\n}',
+    curl: 'curl -X POST ' + BASE + '/orders \\\n  -H "Authorization: Bearer YOUR_KEY" \\\n  -H "Content-Type: application/json" \\\n  -d \'{"package_id":"mlbb-86","player_id":"123456789","server_id":"1234"}\'',
+    php: '$ch = curl_init(\'' + BASE + '/orders\');\ncurl_setopt_array($ch, [\n  CURLOPT_POST => true,\n  CURLOPT_HTTPHEADER => [\n    \'Authorization: Bearer YOUR_KEY\',\n    \'Content-Type: application/json\',\n  ],\n  CURLOPT_POSTFIELDS => json_encode([\n    \'package_id\' => \'mlbb-86\',\n    \'player_id\' => \'123456789\',\n  ]),\n]);\necho curl_exec($ch);',
+    python: 'import requests\nr = requests.post(\n    "' + BASE + '/orders",\n    headers={"Authorization": "Bearer YOUR_KEY"},\n    json={"package_id": "mlbb-86", "player_id": "123456789"},\n)\nprint(r.json())',
+    node: 'const res = await fetch("' + BASE + '/orders", {\n  method: "POST",\n  headers: {\n    Authorization: "Bearer YOUR_KEY",\n    "Content-Type": "application/json",\n  },\n  body: JSON.stringify({\n    package_id: "mlbb-86",\n    player_id: "123456789",\n  }),\n});\nconsole.log(await res.json());'
+  };
+  function show(lang) {
+    var el = document.getElementById('homeApiCode');
+    if (el) el.textContent = snippets[lang] || snippets.json;
+    document.querySelectorAll('#homeApiTabs button').forEach(function (b) {
+      b.classList.toggle('on', b.dataset.lang === lang);
+    });
+  }
+  show('json');
+  var tabs = document.getElementById('homeApiTabs');
+  if (tabs) {
+    tabs.addEventListener('click', function (e) {
+      var b = e.target.closest('button[data-lang]');
+      if (b) show(b.dataset.lang);
+    });
+  }
+})();
+</script>
+</body>
+</html>

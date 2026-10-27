@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Reseller dashboard — VOLT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <script src="/js/i18n-theme.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="logo" href="/"><img class="brand-logo" src="/logo.jpg" alt="VOLT" width="32" height="32" /> VOLT</a>
+      <nav class="nav">
+        <a href="/shop">Shop</a>
+        <a href="/docs">API</a>
+        <a class="active" href="/dashboard">Reseller</a>
+              <a href="/login">Login</a>
+              <div class="ui-controls">
+          <button type="button" data-lang-toggle>EN</button>
+          <button type="button" data-theme-toggle>☾</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="dash-bar">
+    <div class="container">
+      <div class="row">
+        <div class="field" style="flex:2">
+          <label>API key</label>
+          <input id="apiKey" type="password" placeholder="vt_…" autocomplete="off" />
+        </div>
+        <button class="btn btn-primary" type="button" id="btnConnect">Connect</button>
+      </div>
+      <p style="margin-top:0.5rem;font-size:0.8rem;color:var(--muted)">
+        API key បង្កើត auto ពេល <a href="/login">Register / Login</a> · រក្សាទុកក្នុងគណនីអ្នក
+      </p>
+    </div>
+  </div>
+
+  <div class="container" style="padding:1.25rem 0 3rem">
+    <div id="msg"></div>
+    <div class="stat-row" id="stats" style="display:none">
+      <div class="stat"><div class="label">Account</div><div class="value" id="stName">—</div></div>
+      <div class="stat"><div class="label">Balance (USD)</div><div class="value" id="stBal">—</div></div>
+      <div class="stat"><div class="label">Status</div><div class="value" id="stStatus">—</div></div>
+    </div>
+
+    
+    <div id="depositBox" class="card" style="display:none;margin:1rem 0;max-width:480px">
+      <h2 style="font-size:1rem;margin-bottom:0.6rem">ដាក់លុយ / Deposit</h2>
+      <div class="row" style="display:flex;flex-wrap:wrap;gap:0.5rem;align-items:end">
+        <div class="field" style="flex:1;min-width:120px">
+          <label>Amount (USD)</label>
+          <input id="depAmount" type="number" step="0.01" min="0.1" value="5" />
+        </div>
+        <button class="btn btn-primary" type="button" id="btnDeposit">Create deposit</button>
+      </div>
+      <div id="depResult" style="margin-top:0.75rem;font-size:0.85rem"></div>
+    </div>
+
+    <h2 style="font-size:1rem;margin:1rem 0 0.5rem">Catalog</h2>
+    <div id="catalog" class="card" style="font-size:0.85rem;color:var(--muted)">Connect to load games.</div>
+
+    <h2 style="font-size:1rem;margin:1.5rem 0 0.5rem">Recent orders</h2>
+    <div style="overflow-x:auto">
+      <table class="data" id="ordersTable">
+        <thead>
+          <tr><th>ID</th><th>Game</th><th>Package</th><th>Player</th><th>Price</th><th>Status</th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    const keyInput = $('#apiKey');
+    const saved = localStorage.getItem('volt_key');
+    const autoKey = localStorage.getItem('volt_api_key');
+    if (saved) keyInput.value = saved;
+    else if (autoKey) keyInput.value = autoKey;
+    if (keyInput.value) keyInput.type = 'text';
+
+    function headers() {
+      return { 'Authorization': 'Bearer ' + keyInput.value.trim(), 'Content-Type': 'application/json' };
+    }
+    function show(msg, ok) {
+      $('#msg').innerHTML = msg ? `<div class="alert ${ok ? 'ok' : 'err'}">${msg}</div>` : '';
+    }
+    function badge(s) {
+      return `<span class="badge ${s}">${s}</span>`;
+    }
+
+    async function connect() {
+      const key = keyInput.value.trim();
+      if (!key) return show('Enter API key');
+      try {
+        const me = await fetch('/api/v1/me', { headers: headers() }).then(r => r.json());
+        if (!me.ok) throw new Error(me.message || me.error || 'Auth failed');
+        localStorage.setItem('volt_key', key);
+        $('#stats').style.display = 'grid';
+        $('#depositBox').style.display = 'block';
+        const ak = keyInput.value.trim();
+        if (ak) {
+          localStorage.setItem('volt_api_key', ak);
+          let box = document.getElementById('keyShow');
+          if (!box) {
+            box = document.createElement('div');
+            box.id = 'keyShow';
+            box.className = 'card';
+            box.style.margin = '0.75rem 0';
+            box.style.fontSize = '0.85rem';
+            $('#depositBox').parentNode.insertBefore(box, $('#depositBox'));
+          }
+          box.innerHTML = '<strong>API Key</strong><br><code style="word-break:break-all;user-select:all">' + ak + '</code>';
+        }
+        $('#stName').textContent = me.name;
+        $('#stBal').textContent = Number(me.balance).toFixed(2);
+        $('#stStatus').textContent = me.status;
+        show('Connected', true);
+
+        const games = await fetch('/api/v1/games', { headers: headers() }).then(r => r.json());
+        if (games.ok) {
+          let html = '';
+          for (const g of games.games) {
+            html += `<div style="margin-bottom:0.75rem"><strong style="color:var(--ink)">${g.name}</strong>`;
+            html += `<div style="margin-top:0.25rem">${(g.packages || []).map(p => `${p.name} · $${p.price}`).join(' · ')}</div></div>`;
+          }
+          $('#catalog').innerHTML = html || 'No games';
+        }
+
+        const orders = await fetch('/api/v1/orders?limit=30', { headers: headers() }).then(r => r.json());
+        const tb = $('#ordersTable tbody');
+        tb.innerHTML = '';
+        if (orders.ok && orders.orders.length) {
+          for (const o of orders.orders) {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `<td class="mono">${o.id}</td><td>${o.game}</td><td>${o.package}</td><td class="mono">${o.player_id}</td><td>$${o.price}</td><td>${badge(o.status)}</td>`;
+            tb.appendChild(tr);
+          }
+        } else {
+          tb.innerHTML = '<tr><td colspan="6" style="color:var(--muted)">No orders yet</td></tr>';
+        }
+      } catch (e) {
+        show(String(e.message || e), false);
+      }
+    }
+
+    $('#btnConnect').addEventListener('click', connect);
+    
+    $('#btnDeposit').addEventListener('click', async () => {
+      const amount = Number($('#depAmount').value);
+      if (!amount || amount < 0.1) return show('Min $0.10');
+      try {
+        const r = await fetch('/api/v1/deposit/qr', {
+          method: 'POST', headers: headers(),
+          body: JSON.stringify({ amount }),
+        }).then(x => x.json());
+        if (!r.ok) throw new Error(r.message || r.error || 'deposit failed');
+        let html = '<div class="alert ok">Deposit <code>' + r.deposit_id + '</code> · $' + r.amount + '</div>';
+        if (r.simulation) {
+          html += '<p style="margin:0.5rem 0;color:var(--muted)">Demo mode — no real KHQR. Confirm to credit wallet.</p>';
+          html += '<button class="btn btn-primary" type="button" id="btnConfirmDep" data-id="' + r.deposit_id + '">Confirm demo deposit</button>';
+        } else if (r.qr_image) {
+          html += '<img src="' + r.qr_image + '" alt="KHQR" style="max-width:220px;margin-top:0.5rem;border-radius:8px" />';
+          html += '<p style="margin-top:0.5rem;color:var(--muted)">Scan ABA / KHQR then wait…</p>';
+        }
+        $('#depResult').innerHTML = html;
+        const conf = document.getElementById('btnConfirmDep');
+        if (conf) conf.onclick = async () => {
+          const c = await fetch('/api/v1/deposit/' + conf.dataset.id + '/confirm', {
+            method: 'POST', headers: headers(), body: '{}',
+          }).then(x => x.json());
+          if (!c.ok) return show(c.error || 'failed');
+          show('Credited $' + c.amount + ' · balance $' + (c.balance ?? '—'), true);
+          $('#stBal').textContent = Number(c.balance).toFixed(2);
+          $('#depResult').innerHTML = '';
+        };
+      } catch (e) { show(String(e.message || e), false); }
+    });
+
+    // auto connect on load
+    (async () => {
+      const tok = localStorage.getItem('volt_token');
+      if (tok && !keyInput.value) {
+        try {
+          const me = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + tok } }).then(x => x.json());
+          const k = me.apiKey || (me.user && me.user.apiKey);
+          if (k) { keyInput.value = k; keyInput.type = 'text'; localStorage.setItem('volt_api_key', k); }
+        } catch (_) {}
+      }
+      if (keyInput.value) setTimeout(() => { connect().catch(() => {}); }, 200);
+    })();
+
+    $('#demoHint').addEventListener('click', () => {
+      keyInput.value = $('#demoHint').textContent;
+      keyInput.type = 'text';
+    });
+  </script>
+</body>
+</html>

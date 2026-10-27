@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>API docs — VOLT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <script src="/js/i18n-theme.js" defer></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="logo" href="/"><img class="brand-logo" src="/logo.jpg" alt="VOLT" width="32" height="32" /> VOLT</a>
+      <nav class="nav">
+        <a class="active" href="/docs">API docs</a>
+        <a href="/shop">Shop</a>
+        <a href="/dashboard">Reseller</a>
+        <a href="/login">Login</a>
+        <div class="ui-controls">
+          <button type="button" data-lang-toggle>EN</button>
+          <button type="button" data-theme-toggle>☾</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container docs-layout">
+    <nav class="docs-nav">
+      <a href="#base">Base URL</a>
+      <a href="#auth">Authentication</a>
+      <a href="#me">Balance</a>
+      <a href="#games">Games</a>
+      <a href="#order">Create order</a>
+      <a href="#status">Order status</a>
+      <a href="#errors">Errors</a>
+      <a href="#examples">Code examples</a>
+    </nav>
+
+    <article class="docs-body">
+      <div class="docs-intro">
+        <strong>Reseller API v1</strong> — same pattern as Bay2Game: one key, one wallet, JSON over HTTPS.
+        Use these samples in your website or Telegram bot. Replace <code>YOUR_KEY</code> with the key from Login / Dashboard.
+      </div>
+
+      <h2 id="base">Base URL</h2>
+      <p>All paths are relative to your host.</p>
+      <div class="code-panel" id="baseUrl">https://YOUR-HOST/api/v1</div>
+      <p>JSON only · Amounts in USD · Timestamps ISO-8601 UTC</p>
+
+      <h2 id="auth">Authentication</h2>
+      <p>Send your API key on every request:</p>
+      <div class="code-panel">Authorization: Bearer vt_xxxxxxxx
+# or
+X-API-Key: vt_xxxxxxxx</div>
+      <p>Keys are created automatically when you <a href="/login">register</a>. Disabled accounts get <code>401</code>.</p>
+
+      <h2 id="me">Check balance</h2>
+      <p><span class="method">GET</span> <code class="path">/me</code></p>
+      <div class="code-tabs" data-group="me">
+        <button type="button" class="on" data-lang="curl">cURL</button>
+        <button type="button" data-lang="php">PHP</button>
+        <button type="button" data-lang="python">Python</button>
+        <button type="button" data-lang="node">Node.js</button>
+      </div>
+      <div class="code-panel" data-group="me" data-out></div>
+
+      <h2 id="games">List games &amp; packages</h2>
+      <p><span class="method">GET</span> <code class="path">/games</code></p>
+      <p>Wholesale prices for your account. Use <code>fields</code> for player inputs.</p>
+      <div class="code-tabs" data-group="games">
+        <button type="button" class="on" data-lang="curl">cURL</button>
+        <button type="button" data-lang="php">PHP</button>
+        <button type="button" data-lang="python">Python</button>
+        <button type="button" data-lang="node">Node.js</button>
+      </div>
+      <div class="code-panel" data-group="games" data-out></div>
+      <p>Single game: <code>GET /games/:id</code></p>
+
+      <h2 id="order">Create order</h2>
+      <p><span class="method post">POST</span> <code class="path">/orders</code></p>
+      <p>Charges the wallet immediately. Poll status for delivery.</p>
+      <table class="table">
+        <thead><tr><th>Field</th><th>Required</th><th>Notes</th></tr></thead>
+        <tbody>
+          <tr><td><code>package_id</code></td><td>yes</td><td>From /games</td></tr>
+          <tr><td><code>player_id</code></td><td>yes</td><td>UID / username</td></tr>
+          <tr><td><code>server_id</code></td><td>if listed</td><td>Zone / server</td></tr>
+          <tr><td><code>reference</code></td><td>no</td><td>Idempotency key</td></tr>
+          <tr><td><code>callback_url</code></td><td>no</td><td>Webhook (optional)</td></tr>
+        </tbody>
+      </table>
+      <div class="code-tabs" data-group="order">
+        <button type="button" class="on" data-lang="json">JSON</button>
+        <button type="button" data-lang="curl">cURL</button>
+        <button type="button" data-lang="php">PHP</button>
+        <button type="button" data-lang="python">Python</button>
+        <button type="button" data-lang="node">Node.js</button>
+      </div>
+      <div class="code-panel" data-group="order" data-out></div>
+      <p>Same <code>reference</code> → returns original order (no double charge).</p>
+
+      <h2 id="status">Order status</h2>
+      <p><span class="method">GET</span> <code class="path">/orders/:id</code></p>
+      <p>Statuses: <code>processing</code> · <code>success</code> · <code>failed</code> · <code>refunded</code></p>
+      <div class="code-tabs" data-group="status">
+        <button type="button" class="on" data-lang="curl">cURL</button>
+        <button type="button" data-lang="php">PHP</button>
+        <button type="button" data-lang="python">Python</button>
+        <button type="button" data-lang="node">Node.js</button>
+      </div>
+      <div class="code-panel" data-group="status" data-out></div>
+      <p>List: <code>GET /orders?limit=20</code></p>
+
+      <h2 id="errors">Errors</h2>
+      <table class="table">
+        <thead><tr><th>HTTP</th><th>error</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>401</td><td>invalid_api_key</td><td>Bad or disabled key</td></tr>
+          <tr><td>400</td><td>package_id_required</td><td>Missing fields</td></tr>
+          <tr><td>402</td><td>insufficient_balance</td><td>Top up wallet</td></tr>
+          <tr><td>404</td><td>not_found</td><td>Unknown order / game</td></tr>
+        </tbody>
+      </table>
+
+      <h2 id="examples">Quick start — Telegram bot</h2>
+      <p>After user pays, call create order with your API key from env.</p>
+      <div class="code-tabs" data-group="bot">
+        <button type="button" class="on" data-lang="node">Node.js</button>
+        <button type="button" data-lang="python">Python</button>
+      </div>
+      <div class="code-panel" data-group="bot" data-out></div>
+    </article>
+  </div>
+
+  <footer class="site">
+    <div class="container">VOLT API v1 · Reseller</div>
+  </footer>
+
+<script>
+(function () {
+  const ORIGIN = location.origin;
+  const BASE = ORIGIN + '/api/v1';
+  const KEY = 'YOUR_KEY';
+
+  document.getElementById('baseUrl').textContent = BASE;
+
+  const S = {
+    me: {
+      curl: `curl ${BASE}/me \\
+  -H "Authorization: Bearer ${KEY}"`,
+      php: `<?php
+$ch = curl_init('${BASE}/me');
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => [
+    'Authorization: Bearer ${KEY}',
+  ],
+]);
+echo curl_exec($ch);`,
+      python: `import requests
+r = requests.get(
+    "${BASE}/me",
+    headers={"Authorization": "Bearer ${KEY}"},
+    timeout=20,
+)
+print(r.json())`,
+      node: `const res = await fetch("${BASE}/me", {
+  headers: { Authorization: "Bearer ${KEY}" },
+});
+console.log(await res.json());`,
+    },
+    games: {
+      curl: `curl ${BASE}/games \\
+  -H "X-API-Key: ${KEY}"`,
+      php: `<?php
+$ch = curl_init('${BASE}/games');
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => ['X-API-Key: ${KEY}'],
+]);
+$data = json_decode(curl_exec($ch), true);
+print_r($data);`,
+      python: `import requests
+r = requests.get(
+    "${BASE}/games",
+    headers={"X-API-Key": "${KEY}"},
+    timeout=20,
+)
+print(r.json())`,
+      node: `const res = await fetch("${BASE}/games", {
+  headers: { "X-API-Key": "${KEY}" },
+});
+const data = await res.json();
+console.log(data.games);`,
+    },
+    order: {
+      json: `POST ${BASE}/orders
+Content-Type: application/json
+Authorization: Bearer ${KEY}
+
+{
+  "package_id": "mlbb-86",
+  "player_id": "123456789",
+  "server_id": "1234",
+  "reference": "shop-order-1001"
+}`,
+      curl: `curl -X POST ${BASE}/orders \\
+  -H "Authorization: Bearer ${KEY}" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "package_id": "mlbb-86",
+    "player_id": "123456789",
+    "server_id": "1234",
+    "reference": "shop-order-1001"
+  }'`,
+      php: `<?php
+$ch = curl_init('${BASE}/orders');
+curl_setopt_array($ch, [
+  CURLOPT_POST => true,
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => [
+    'Content-Type: application/json',
+    'Authorization: Bearer ${KEY}',
+  ],
+  CURLOPT_POSTFIELDS => json_encode([
+    'package_id' => 'mlbb-86',
+    'player_id'  => '123456789',
+    'server_id'  => '1234',
+    'reference'  => 'shop-order-1001',
+  ]),
+]);
+echo curl_exec($ch);`,
+      python: `import requests
+r = requests.post(
+    "${BASE}/orders",
+    headers={"Authorization": f"Bearer ${KEY}"},
+    json={
+        "package_id": "mlbb-86",
+        "player_id": "123456789",
+        "server_id": "1234",
+        "reference": "shop-order-1001",
+    },
+    timeout=20,
+)
+print(r.json())`,
+      node: `const res = await fetch("${BASE}/orders", {
+  method: "POST",
+  headers: {
+    "Content-Type": "application/json",
+    Authorization: "Bearer ${KEY}",
+  },
+  body: JSON.stringify({
+    package_id: "mlbb-86",
+    player_id: "123456789",
+    server_id: "1234",
+    reference: "shop-order-1001",
+  }),
+});
+console.log(await res.json());`,
+    },
+    status: {
+      curl: `curl ${BASE}/orders/NX_A1B2C3 \\
+  -H "Authorization: Bearer ${KEY}"`,
+      php: `<?php
+$ch = curl_init('${BASE}/orders/NX_A1B2C3');
+curl_setopt_array($ch, [
+  CURLOPT_RETURNTRANSFER => true,
+  CURLOPT_HTTPHEADER => ['Authorization: Bearer ${KEY}'],
+]);
+echo curl_exec($ch);`,
+      python: `import requests
+r = requests.get(
+    "${BASE}/orders/NX_A1B2C3",
+    headers={"Authorization": "Bearer ${KEY}"},
+    timeout=20,
+)
+print(r.json())`,
+      node: `const res = await fetch("${BASE}/orders/NX_A1B2C3", {
+  headers: { Authorization: "Bearer ${KEY}" },
+});
+console.log(await res.json());`,
+    },
+    bot: {
+      node: `// Telegram bot — after payment confirmed
+const BASE = process.env.VOLT_BASE || "${BASE}";
+const KEY = process.env.VOLT_KEY;
+
+async function topup(uid, zone, packageId, ref) {
+  const res = await fetch(BASE + "/orders", {
+    method: "POST",
+    headers: {
+      Authorization: "Bearer " + KEY,
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      package_id: packageId,
+      player_id: String(uid),
+      server_id: zone || "",
+      reference: ref,
+    }),
+  });
+  return res.json();
+}`,
+      python: `# Telegram bot — after payment confirmed
+import os, requests
+
+BASE = os.environ.get("VOLT_BASE", "${BASE}")
+KEY = os.environ["VOLT_KEY"]
+
+def topup(uid, zone, package_id, ref):
+    r = requests.post(
+        f"{BASE}/orders",
+        headers={"Authorization": f"Bearer {KEY}"},
+        json={
+            "package_id": package_id,
+            "player_id": str(uid),
+            "server_id": zone or "",
+            "reference": ref,
+        },
+        timeout=20,
+    )
+    return r.json()`,
+    },
+  };
+
+  function show(group, lang) {
+    const box = document.querySelector('.code-panel[data-group="' + group + '"][data-out]');
+    const tabs = document.querySelectorAll('.code-tabs[data-group="' + group + '"] button');
+    if (!box || !S[group]) return;
+    const code = S[group][lang] || S[group][Object.keys(S[group])[0]];
+    box.textContent = code;
+    tabs.forEach((b) => b.classList.toggle('on', b.dataset.lang === lang));
+  }
+
+  document.querySelectorAll('.code-tabs').forEach((tabBar) => {
+    const group = tabBar.dataset.group;
+    const first = tabBar.querySelector('button.on') || tabBar.querySelector('button');
+    if (first) show(group, first.dataset.lang);
+    tabBar.addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-lang]');
+      if (btn) show(group, btn.dataset.lang);
+    });
+  });
+})();
+</script>
+</body>
+</html>

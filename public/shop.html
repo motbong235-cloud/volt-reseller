@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Shop — VOLT</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link rel="stylesheet" href="/css/site.css" />
+  <script src="/js/i18n-theme.js" defer></script>
+  <style>
+    .menu-tabs { display:flex; gap:0.35rem; flex-wrap:wrap; margin:1rem 0; }
+    .menu-tabs button {
+      border:1px solid var(--line); background:#fff; border-radius:8px;
+      padding:0.45rem 0.85rem; font:inherit; font-size:0.85rem; font-weight:600; cursor:pointer;
+    }
+    .menu-tabs button.on { background:var(--ink); color:#fff; border-color:var(--ink); }
+    .game-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(140px,1fr)); gap:0.75rem; }
+    .gcard {
+      background:#fff; border:1px solid var(--line); border-radius:12px; overflow:hidden; cursor:pointer;
+    }
+    .gcard:hover { border-color:#94a3b8; }
+    .gcard .art {
+      aspect-ratio:1; background:linear-gradient(145deg,#1e293b,#334155); color:#fff;
+      display:grid; place-items:center; font-weight:800; font-size:1.1rem;
+    }
+    .gcard .body { padding:0.55rem 0.65rem; font-size:0.8rem; font-weight:600; }
+    .panel { display:none; }
+    .panel.on { display:block; }
+    #tg-box { min-height:48px; margin:0.5rem 0; }
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="inner">
+      <a class="logo" href="/"><img class="brand-logo" src="/logo.jpg" alt="VOLT" width="32" height="32" /> VOLT</a>
+      <nav class="nav">
+        <a class="active" href="/shop">Shop</a>
+        
+        <a href="/dashboard">Reseller</a>
+        <a href="/login" id="navAuth">Login</a>
+              <div class="ui-controls">
+          <button type="button" data-lang-toggle>EN</button>
+          <button type="button" data-theme-toggle>☾</button>
+        </div>
+      </nav>
+    </div>
+  </header>
+
+  <div class="container" style="padding:1.25rem 0 3rem">
+    <div class="menu-tabs" id="tabs">
+      <button type="button" class="on" data-tab="games" data-i18n="tab_games">ហ្គេម</button>
+      <button type="button" data-tab="order" data-i18n="tab_order">បញ្ជាទិញ</button>
+      <button type="button" data-tab="track" data-i18n="tab_track">តាមដាន</button>
+      <button type="button" data-tab="login" data-i18n="tab_login">Telegram</button>
+    </div>
+
+    <div id="msg"></div>
+
+    <!-- GAMES -->
+    <div class="panel on" id="panel-games">
+      <h2 style="font-size:1.05rem;margin-bottom:0.75rem">ជ្រើសហ្គេម</h2>
+      <div class="game-grid" id="gameGrid"></div>
+    </div>
+
+    <!-- ORDER -->
+    <div class="panel" id="panel-order">
+      <div class="card" style="max-width:420px">
+        <h3 id="ordGame">—</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin:0.35rem 0 0.75rem" id="ordHint">ជ្រើសកញ្ចប់</p>
+        <div id="packs" style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem;margin-bottom:0.75rem"></div>
+        <div class="field" style="margin-bottom:0.5rem"><label>Player / User ID</label><input id="playerId" /></div>
+        <div class="field" style="margin-bottom:0.75rem" id="serverWrap"><label>Server / Zone</label><input id="serverId" /></div>
+        <input id="orderKey" type="hidden" />
+        <p id="keyHint" style="font-size:0.8rem;color:var(--muted);margin-bottom:0.75rem"></p>
+        <button class="btn btn-primary btn-block" type="button" id="btnOrder">បញ្ជាទិញ</button>
+      </div>
+    </div>
+
+    <!-- TRACK -->
+    <div class="panel" id="panel-track">
+      <div class="card" style="max-width:420px">
+        <div class="field"><label>Order ID</label><input id="trackId" placeholder="NX_…" /></div>
+        <input id="trackKey" type="hidden" />
+        <button class="btn btn-ghost" style="margin-top:0.75rem" type="button" id="btnTrack">ពិនិត្យ</button>
+        <pre class="pre" id="trackOut" style="display:none;margin-top:0.75rem"></pre>
+      </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div class="panel" id="panel-login">
+      <div class="card" style="max-width:420px">
+        <h3>Login with Telegram</h3>
+        <p style="font-size:0.85rem;color:var(--muted);margin:0.5rem 0">
+          កំណត់ <code>TELEGRAM_BOT_TOKEN</code> + <code>TELEGRAM_BOT_USERNAME</code> លើ server
+          រួច BotFather → <code>/setdomain</code> domain របស់អ្នក។
+        </p>
+        <div id="tg-box"></div>
+        <div id="tg-user" style="font-size:0.9rem;margin-top:0.75rem"></div>
+      </div>
+    </div>
+
+    <script>
+    const $ = (s) => document.querySelector(s);
+    let catalog = [];
+    let selectedGame = null;
+    let selectedPack = null;
+
+    document.querySelectorAll('#tabs button').forEach((b) => {
+      b.addEventListener('click', () => {
+        document.querySelectorAll('#tabs button').forEach((x) => x.classList.remove('on'));
+        b.classList.add('on');
+        document.querySelectorAll('.panel').forEach((p) => p.classList.remove('on'));
+        $('#panel-' + b.dataset.tab).classList.add('on');
+        if (b.dataset.tab === 'login') loadTg();
+      });
+    });
+
+    async function loadGames() {
+      // public catalog via reseller demo key attempt, else static from admin-less endpoint
+      try {
+        const r = await fetch('/api/v1/games', {
+          headers: { Authorization: 'Bearer ' + (localStorage.getItem('volt_key') || 'vt_demo_key_replace_in_production_0001') },
+        }).then((x) => x.json());
+        if (r.ok) catalog = r.games;
+      } catch (_) {}
+      const grid = $('#gameGrid');
+      grid.innerHTML = '';
+      (catalog.length ? catalog : [
+        { id: 'mlbb', name: 'Mobile Legends', packages: [] },
+        { id: 'ff', name: 'Free Fire', packages: [] },
+        { id: 'pubg', name: 'PUBG Mobile', packages: [] },
+      ]).forEach((g) => {
+        const el = document.createElement('div');
+        el.className = 'gcard';
+        el.innerHTML = `<div class="art">${g.name.slice(0, 2).toUpperCase()}</div><div class="body">${g.name}</div>`;
+        el.onclick = () => openGame(g);
+        grid.appendChild(el);
+      });
+    }
+
+    function openGame(g) {
+      selectedGame = g;
+      selectedPack = null;
+      $('#ordGame').textContent = g.name;
+      const needServer = (g.fields || []).some((f) => f.key === 'server_id' && f.required);
+      $('#serverWrap').style.display = needServer ? 'flex' : 'none';
+      const packs = $('#packs');
+      packs.innerHTML = '';
+      (g.packages || []).forEach((p) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'btn btn-ghost';
+        b.style.textAlign = 'left';
+        b.innerHTML = `<strong>${p.name}</strong><div style="font-size:0.8rem;color:var(--blue)">$${p.price}</div>`;
+        b.onclick = () => {
+          selectedPack = p;
+          packs.querySelectorAll('button').forEach((x) => (x.style.borderColor = ''));
+          b.style.borderColor = 'var(--blue)';
+        };
+        packs.appendChild(b);
+      });
+      document.querySelectorAll('#tabs button').forEach((x) => x.classList.remove('on'));
+      document.querySelector('[data-tab=order]').classList.add('on');
+      document.querySelectorAll('.panel').forEach((p) => p.classList.remove('on'));
+      $('#panel-order').classList.add('on');
+    }
+
+    $('#btnOrder').onclick = async () => {
+      const key = $('#orderKey').value.trim() || localStorage.getItem('volt_key') || '';
+      if (!selectedPack) return alert('ជ្រើសកញ្ចប់');
+      if (!key) return alert('សូម Login ដើម្បីបញ្ជាទិញ');
+      localStorage.setItem('volt_key', key);
+      const body = {
+        package_id: selectedPack.id,
+        player_id: $('#playerId').value.trim(),
+        server_id: $('#serverId').value.trim() || undefined,
+        reference: 'web-' + Date.now(),
+      };
+      const r = await fetch('/api/v1/orders', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + key, 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then((x) => x.json());
+      if (!r.ok) return alert(r.error || r.message || 'failed');
+      alert('Order ' + r.order.id + ' · ' + r.order.status);
+    };
+
+    $('#btnTrack').onclick = async () => {
+      const key = $('#trackKey').value.trim() || localStorage.getItem('volt_key');
+      const id = $('#trackId').value.trim();
+      const r = await fetch('/api/v1/orders/' + encodeURIComponent(id), {
+        headers: { Authorization: 'Bearer ' + key },
+      }).then((x) => x.json());
+      $('#trackOut').style.display = 'block';
+      $('#trackOut').textContent = JSON.stringify(r, null, 2);
+    };
+
+    async function loadTg() {
+      const cfg = await fetch('/api/config/public').then((x) => x.json()).catch(() => ({}));
+      const box = $('#tg-box');
+      box.innerHTML = '';
+      if (cfg.telegramLoginEnabled && cfg.telegramBotUsername) {
+        const s = document.createElement('script');
+        s.src = 'https://telegram.org/js/telegram-widget.js?22';
+        s.setAttribute('data-telegram-login', cfg.telegramBotUsername);
+        s.setAttribute('data-size', 'large');
+        s.setAttribute('data-radius', '8');
+        s.setAttribute('data-onauth', 'onTelegramAuth(user)');
+        s.setAttribute('data-request-access', 'write');
+        box.appendChild(s);
+      } else {
+        box.innerHTML = '<p style="font-size:0.85rem;color:var(--muted)">Telegram login មិនទាន់បើក — កំណត់ env លើ Render។</p>';
+      }
+    }
+    window.onTelegramAuth = async function (user) {
+      const r = await fetch('/api/auth/telegram', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(user),
+      }).then((x) => x.json());
+      if (r.ok) {
+        localStorage.setItem('volt_tg', JSON.stringify(r.user));
+        $('#tg-user').textContent = 'Logged in: @' + (r.user.username || r.user.telegramId);
+      } else alert(r.error || 'auth failed');
+    };
+
+    
+    // session
+    (function(){
+      const u = localStorage.getItem('volt_user');
+      const a = document.getElementById('navAuth');
+      if (u && a) {
+        try {
+          const j = JSON.parse(u);
+          a.textContent = j.name || j.email || 'Account';
+          a.href = '/login';
+        } catch(_){}
+      }
+    })();
+
+    
+    // API key from account (hidden) — fetch /me if needed
+    (async function(){
+      let k = localStorage.getItem('volt_api_key');
+      const token = localStorage.getItem('volt_token');
+      if (!k && token) {
+        try {
+          const me = await fetch('/api/auth/me', { headers: { Authorization: 'Bearer ' + token } }).then(x => x.json());
+          k = me.apiKey || (me.user && me.user.apiKey) || '';
+          if (k) localStorage.setItem('volt_api_key', k);
+        } catch (_) {}
+      }
+      const a = document.getElementById('orderKey');
+      const b = document.getElementById('trackKey');
+      const hint = document.getElementById('keyHint');
+      if (k) {
+        if (a) a.value = k;
+        if (b) b.value = k;
+        if (hint) hint.innerHTML = 'គណនីភ្ជាប់រួច — អាចបញ្ជាទិញបាន';
+      } else if (hint) {
+        hint.innerHTML = 'ត្រូវ <a href="/login">Login / Register</a> មុនបញ្ជាទិញ';
+      }
+    })();
+
+    loadGames();
+  </script>
+</body>
+</html>

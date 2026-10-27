@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>Console</title>
+  <link rel="icon" href="/logo.jpg" type="image/jpeg" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #0b1220;
+      --panel: #111827;
+      --panel2: #0f172a;
+      --line: #1e293b;
+      --ink: #e2e8f0;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --accent2: #0ea5e9;
+      --ok: #34d399;
+      --bad: #f87171;
+      --warn: #fbbf24;
+      --radius: 12px;
+      --font: Inter, system-ui, sans-serif;
+      --mono: "IBM Plex Mono", ui-monospace, monospace;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: var(--font);
+      background: var(--bg);
+      color: var(--ink);
+      min-height: 100vh;
+      font-size: 14px;
+      line-height: 1.45;
+    }
+    a { color: var(--accent); text-decoration: none; }
+    .mono { font-family: var(--mono); font-size: 12px; }
+
+    /* Gate */
+    #gate {
+      min-height: 100vh; display: grid; place-items: center; padding: 1.5rem;
+      background: radial-gradient(ellipse at top, #132037 0%, var(--bg) 60%);
+    }
+    .gate-card {
+      width: min(380px, 100%);
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 1.75rem 1.5rem;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    }
+    .gate-card .brand {
+      display: flex; align-items: center; gap: 10px; margin-bottom: 1.25rem;
+    }
+    .gate-card .brand img { width: 36px; height: 36px; border-radius: 9px; }
+    .gate-card h1 { font-size: 1.1rem; font-weight: 700; letter-spacing: -0.02em; }
+    .gate-card p { color: var(--muted); font-size: 0.8rem; margin-top: 2px; }
+    label { display: block; font-size: 0.72rem; font-weight: 600; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; letter-spacing: 0.04em; }
+    input {
+      width: 100%; background: var(--panel2); border: 1px solid var(--line);
+      border-radius: 10px; padding: 0.7rem 0.85rem; color: var(--ink); font: inherit;
+    }
+    input:focus { outline: 2px solid rgba(56,189,248,.35); border-color: var(--accent); }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      border: none; border-radius: 10px; padding: 0.65rem 1rem;
+      font: inherit; font-weight: 600; cursor: pointer;
+      transition: background .12s, opacity .12s;
+    }
+    .btn-primary { background: linear-gradient(135deg, var(--accent), var(--accent2)); color: #0b1220; width: 100%; margin-top: 0.85rem; }
+    .btn-primary:hover { opacity: .92; }
+    .btn-ghost {
+      background: transparent; border: 1px solid var(--line); color: var(--ink);
+      padding: 0.4rem 0.7rem; font-size: 0.78rem;
+    }
+    .btn-ghost:hover { border-color: var(--accent); }
+    .btn-sm { padding: 0.35rem 0.6rem; font-size: 0.75rem; border-radius: 8px; }
+    .err { background: rgba(248,113,113,.12); color: var(--bad); border: 1px solid rgba(248,113,113,.25); padding: 0.6rem 0.75rem; border-radius: 8px; margin-top: 0.75rem; font-size: 0.82rem; }
+
+    /* Shell */
+    #app { display: none; min-height: 100vh; }
+    .shell { display: grid; grid-template-columns: 220px 1fr; min-height: 100vh; }
+    @media (max-width: 860px) {
+      .shell { grid-template-columns: 1fr; }
+      .sidebar { position: sticky; top: 0; z-index: 20; display: flex; flex-wrap: wrap; gap: 4px; padding: 0.6rem !important; }
+      .sidebar .nav-item { flex: 1 1 auto; }
+      .sidebar .side-foot { display: none; }
+    }
+    .sidebar {
+      background: var(--panel); border-right: 1px solid var(--line);
+      padding: 1.1rem 0.85rem; display: flex; flex-direction: column; gap: 0.25rem;
+    }
+    .side-brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.35rem 0.5rem 1rem; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem;
+    }
+    .side-brand img { width: 32px; height: 32px; border-radius: 8px; }
+    .side-brand strong { font-size: 0.95rem; }
+    .side-brand span { display: block; font-size: 0.7rem; color: var(--muted); }
+    .nav-item {
+      display: block; width: 100%; text-align: left;
+      background: transparent; border: none; color: var(--muted);
+      padding: 0.55rem 0.7rem; border-radius: 8px; font: inherit; font-weight: 550; cursor: pointer;
+    }
+    .nav-item:hover { background: rgba(56,189,248,.08); color: var(--ink); }
+    .nav-item.on { background: rgba(56,189,248,.14); color: var(--accent); }
+    .side-foot { margin-top: auto; padding-top: 1rem; font-size: 0.72rem; color: var(--muted); }
+
+    .main { padding: 1.25rem 1.35rem 2.5rem; }
+    .topbar {
+      display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between;
+      gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .topbar h2 { font-size: 1.15rem; font-weight: 700; letter-spacing: -0.02em; }
+    .topbar .meta { font-size: 0.8rem; color: var(--muted); }
+
+    .stats {
+      display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem; margin-bottom: 1.25rem;
+    }
+    .stat {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 0.95rem 1rem;
+    }
+    .stat .l { font-size: 0.72rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .stat .v { font-size: 1.4rem; font-weight: 700; margin-top: 0.2rem; letter-spacing: -0.02em; }
+
+    .panel {
+      background: var(--panel); border: 1px solid var(--line); border-radius: var(--radius);
+      padding: 1rem 1.1rem; margin-bottom: 1rem;
+    }
+    .panel h3 { font-size: 0.9rem; font-weight: 650; margin-bottom: 0.75rem; }
+    .row { display: flex; flex-wrap: wrap; gap: 0.6rem; align-items: end; }
+    .field { flex: 1; min-width: 140px; }
+    .field.grow { flex: 2; }
+
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    th, td { text-align: left; padding: 0.55rem 0.5rem; border-bottom: 1px solid var(--line); vertical-align: middle; }
+    th { color: var(--muted); font-weight: 600; font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.03em; }
+    tr:last-child td { border-bottom: 0; }
+    .badge {
+      display: inline-block; font-size: 0.68rem; font-weight: 700; padding: 0.15rem 0.45rem;
+      border-radius: 999px; text-transform: uppercase;
+    }
+    .badge.success, .badge.active { background: rgba(52,211,153,.15); color: var(--ok); }
+    .badge.processing { background: rgba(56,189,248,.15); color: var(--accent); }
+    .badge.failed, .badge.refunded, .badge.disabled { background: rgba(248,113,113,.15); color: var(--bad); }
+    .badge.pending { background: rgba(251,191,36,.12); color: var(--warn); }
+    .truncate { max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .section { display: none; }
+    .section.on { display: block; }
+    .ok-msg { color: var(--ok); font-size: 0.8rem; margin-top: 0.5rem; }
+  </style>
+</head>
+<body>
+  <div id="gate">
+    <div class="gate-card">
+      <div class="brand">
+        <img src="/logo.jpg" alt="" width="36" height="36" />
+        <div>
+          <h1>VOLT Console</h1>
+          <p>Private administration</p>
+        </div>
+      </div>
+      <label for="token">Admin token</label>
+      <input id="token" type="password" placeholder="ADMIN_TOKEN" autocomplete="off" />
+      <button class="btn btn-primary" type="button" id="btnEnter">Enter</button>
+      <div id="gateErr" class="err" style="display:none"></div>
+    </div>
+  </div>
+
+  <div id="app">
+    <div class="shell">
+      <aside class="sidebar">
+        <div class="side-brand">
+          <img src="/logo.jpg" alt="" width="32" height="32" />
+          <div><strong>VOLT</strong><span>Admin console</span></div>
+        </div>
+        <button type="button" class="nav-item on" data-sec="overview">Overview</button>
+        <button type="button" class="nav-item" data-sec="resellers">Resellers</button>
+        <button type="button" class="nav-item" data-sec="orders">Orders</button>
+        <button type="button" class="nav-item" data-sec="integrations">Integrations</button>
+        <div class="side-foot">URL is private · do not share</div>
+      </aside>
+
+      <main class="main">
+        <div class="topbar">
+          <div>
+            <h2 id="pageTitle">Overview</h2>
+            <div class="meta" id="pageMeta">Live snapshot</div>
+          </div>
+          <button type="button" class="btn btn-ghost" id="btnRefresh">Refresh</button>
+        </div>
+
+        <div id="flash"></div>
+
+        <section class="section on" id="sec-overview">
+          <div class="stats" id="stats"></div>
+        </section>
+
+        <section class="section" id="sec-resellers">
+          <div class="panel">
+            <h3>Create reseller</h3>
+            <div class="row">
+              <div class="field grow"><label>Name</label><input id="rsName" /></div>
+              <div class="field"><label>Email</label><input id="rsEmail" type="email" /></div>
+              <div class="field"><label>Start balance</label><input id="rsBal" type="number" step="0.01" value="0" /></div>
+              <button type="button" class="btn btn-primary" style="width:auto" id="btnCreate">Create</button>
+            </div>
+          </div>
+          <div class="panel" style="overflow-x:auto">
+            <h3>All resellers</h3>
+            <table>
+              <thead><tr><th>Name</th><th>Balance</th><th>Status</th><th>API key</th><th></th></tr></thead>
+              <tbody id="rsBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" id="sec-orders">
+          <div class="panel" style="overflow-x:auto">
+            <table>
+              <thead><tr><th>ID</th><th>Reseller</th><th>Game</th><th>Player</th><th>Price</th><th>Status</th></tr></thead>
+              <tbody id="orBody"></tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="section" id="sec-integrations">
+          <div class="panel">
+            <h3>Payment &amp; fulfilment</h3>
+            <div class="stats" id="integ"></div>
+            <p style="color:var(--muted);font-size:0.8rem;margin-top:0.75rem">
+              Set <code class="mono">KHMER_SYSTEM_SECRET_KEY</code>, <code class="mono">KHMER_TOPUP_API_KEY</code>,
+              <code class="mono">ADMIN_TOKEN</code>, <code class="mono">JWT_SECRET</code> on the host.
+            </p>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    const $ = (s) => document.querySelector(s);
+    let token = sessionStorage.getItem('volt_admin_tok') || '';
+
+    function headers() {
+      return { 'X-Admin-Token': token, 'Content-Type': 'application/json' };
+    }
+    function flash(msg, ok) {
+      $('#flash').innerHTML = msg
+        ? `<div class="${ok ? 'ok-msg' : 'err'}" style="margin-bottom:0.75rem">${msg}</div>`
+        : '';
+    }
+    function badge(s) {
+      return `<span class="badge ${s || ''}">${s || '—'}</span>`;
+    }
+
+    document.querySelectorAll('.nav-item').forEach((btn) => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.nav-item').forEach((b) => b.classList.remove('on'));
+        btn.classList.add('on');
+        document.querySelectorAll('.section').forEach((s) => s.classList.remove('on'));
+        $('#sec-' + btn.dataset.sec).classList.add('on');
+        $('#pageTitle').textContent = btn.textContent.trim();
+      });
+    });
+
+    async function load() {
+      const ov = await fetch('/api/admin/overview', { headers: headers() }).then((r) => r.json());
+      if (!ov.ok) throw new Error(ov.error || 'Unauthorized');
+      sessionStorage.setItem('volt_admin_tok', token);
+      $('#gate').style.display = 'none';
+      $('#app').style.display = 'block';
+      $('#stats').innerHTML = `
+        <div class="stat"><div class="l">Resellers</div><div class="v">${ov.resellers}</div></div>
+        <div class="stat"><div class="l">Orders</div><div class="v">${ov.orders}</div></div>
+        <div class="stat"><div class="l">Today</div><div class="v">${ov.todayOrders}</div></div>
+        <div class="stat"><div class="l">Volume today</div><div class="v">$${Number(ov.volumeToday || 0).toFixed(2)}</div></div>`;
+
+      const rs = await fetch('/api/admin/resellers', { headers: headers() }).then((r) => r.json());
+      const rb = $('#rsBody');
+      rb.innerHTML = '';
+      for (const r of rs.resellers || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${r.name}<div class="mono" style="color:var(--muted)">${r.id}</div></td>
+          <td>$${Number(r.balance).toFixed(2)}</td>
+          <td>${badge(r.status)}</td>
+          <td class="mono truncate" title="${r.apiKey}">${r.apiKey}</td>
+          <td style="white-space:nowrap">
+            <button type="button" class="btn btn-ghost btn-sm" data-credit="${r.id}">+$10</button>
+            <button type="button" class="btn btn-ghost btn-sm" data-key="${r.id}">New key</button>
+          </td>`;
+        rb.appendChild(tr);
+      }
+
+      const or = await fetch('/api/admin/orders?limit=50', { headers: headers() }).then((r) => r.json());
+      const ob = $('#orBody');
+      ob.innerHTML = '';
+      for (const o of or.orders || []) {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="mono">${o.id}</td>
+          <td class="mono truncate">${o.resellerId}</td>
+          <td>${o.game_name || o.game || '—'}</td>
+          <td class="mono">${o.player_id || ''}</td>
+          <td>$${o.price}</td>
+          <td>${badge(o.status)}</td>`;
+        ob.appendChild(tr);
+      }
+
+      try {
+        const integ = await fetch('/api/v1/integrations').then((r) => r.json());
+        $('#integ').innerHTML = `
+          <div class="stat"><div class="l">Khmer System</div><div class="v" style="font-size:1rem">${integ.khmer_system ? 'Ready' : 'Off'}</div></div>
+          <div class="stat"><div class="l">Khmer TopUp</div><div class="v" style="font-size:1rem">${integ.khmer_topup ? 'Ready' : 'Off'}</div></div>`;
+      } catch (_) {
+        $('#integ').innerHTML = '<div class="stat"><div class="l">Status</div><div class="v" style="font-size:1rem">—</div></div>';
+      }
+      flash('Synced', true);
+    }
+
+    $('#btnEnter').onclick = () => {
+      token = $('#token').value.trim();
+      load().catch((e) => {
+        $('#gateErr').style.display = 'block';
+        $('#gateErr').textContent = e.message || 'Access denied';
+      });
+    };
+    $('#token').addEventListener('keydown', (e) => { if (e.key === 'Enter') $('#btnEnter').click(); });
+    $('#btnRefresh').onclick = () => load().catch((e) => flash(e.message, false));
+
+    $('#btnCreate').onclick = async () => {
+      try {
+        const body = {
+          name: $('#rsName').value.trim(),
+          email: $('#rsEmail').value.trim(),
+          balance: Number($('#rsBal').value) || 0,
+        };
+        const r = await fetch('/api/admin/resellers', { method: 'POST', headers: headers(), body: JSON.stringify(body) }).then((x) => x.json());
+        if (!r.ok) throw new Error(r.error);
+        alert('Created\n\nAPI key:\n' + r.reseller.apiKey);
+        load();
+      } catch (e) { flash(e.message, false); }
+    };
+
+    document.addEventListener('click', async (e) => {
+      const c = e.target.getAttribute('data-credit');
+      const k = e.target.getAttribute('data-key');
+      if (c) {
+        await fetch('/api/admin/resellers/' + c + '/credit', { method: 'POST', headers: headers(), body: JSON.stringify({ amount: 10 }) });
+        load();
+      }
+      if (k) {
+        await fetch('/api/admin/resellers/' + k, { method: 'PATCH', headers: headers(), body: JSON.stringify({ regenerateKey: true }) });
+        load();
+      }
+    });
+
+    if (token) {
+      load().catch(() => { sessionStorage.removeItem('volt_admin_tok'); token = ''; });
+    }
+  </script>
+</body>
+</html>
